@@ -20,14 +20,11 @@ import java.util.Collection;
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NaturalId(mutable = false)
     private Long id;
-//    @NaturalId(mutable = false)
-//    @Email(message = "wrong email format")
-//    @NotBlank(message = "email must not be empty")
+    @Email
     private String email;
-//    @NotBlank(message = "firstName must not be blank")
     private String firstName;
-//    @NotBlank(message = "Last name must not be null")
     private String lastName;
     private String phoneNumber;
     private String password;

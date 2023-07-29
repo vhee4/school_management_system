@@ -11,6 +11,7 @@ import com.SchoolManagement.School.Management.System.service.UserService;
 import com.SchoolManagement.School.Management.System.utils.IDGenerator;
 import com.SchoolManagement.School.Management.System.utils.Response;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,43 +19,67 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     public final UserRepository userRepository;
     public final RoleRepository roleRepository;
+    String phoneNumberRegex = "(^$|(234\\d{10})|(\\d{11}))";//phone number accepts only 13 digits starting with 234
+
 
     @Override
     public UserResponse signUpForStudents(UserRequest userRequest) {
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
+        if(userRequest.getFirstName().isEmpty()){
             return UserResponse.builder()
-                    .responseCode(Response.USER_EXISTS_CODE)
-                    .responseMessage(Response.USER_EXISTS_MESSAGE)
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_FIRSTNAME)
+                    .data(null)
+                    .build();
+        }
+        if(userRequest.getLastName().isBlank()){
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_LASTNAME)
+                    .data(null)
+                    .build();
+        }
+        if(userRequest.getPhoneNumber().isBlank()){
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
+                    .data(null)
+                    .build();}
+        if (!isInputValid(userRequest.getPhoneNumber(), phoneNumberRegex)) {
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT)
+                    .data(null)
                     .build();
         }
 
         AppUser user = AppUser.builder()
-                .email(IDGenerator.generateEmail(userRequest.getFirstName(), userRequest.getLastName()))
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
+                .email(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()))
                 .phoneNumber(userRequest.getPhoneNumber())
                 .password(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD))
                 .studentId(IDGenerator.generateStudentID())
 //                .roles(Collections.singleton(studentRoles))
                 .build();
 
-        Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
-        Roles studentRoles = null;
-        if (roles.isPresent()) {
-            studentRoles = roles.get();
-        } else {
-            Roles defaultStudentRole = Roles.builder()
-                    .name("ROLE_STUDENT")
-                    .build();
-            studentRoles = roleRepository.save(defaultStudentRole);
-        }
-user.setRoles(Collections.singleton(studentRoles));
+//        Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
+//        Roles studentRoles = null;
+//        if (roles.isPresent()) {
+//            studentRoles = roles.get();
+//        } else {
+//            Roles defaultStudentRole = Roles.builder()
+//                    .name("ROLE_STUDENT")
+//                    .build();
+//            studentRoles = roleRepository.save(defaultStudentRole);
+//        }
+//user.setRoles(Collections.singleton(studentRoles));
 
         AppUser savedUser = userRepository.save(user);
 
@@ -68,16 +93,40 @@ user.setRoles(Collections.singleton(studentRoles));
                         .password(savedUser.getPassword())
                         .build())
                 .build();
+
     }
 
     @Override
-    public ResponseEntity<UserResponse> signUpForStaffs(UserRequest userRequest) {
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
-            return new ResponseEntity<>(UserResponse.builder()
-                    .responseCode(Response.USER_EXISTS_CODE)
-                    .responseMessage(Response.USER_EXISTS_MESSAGE)
-                    .build(), HttpStatus.CONFLICT);
+    public UserResponse signUpForStaffs(UserRequest userRequest) {
+        if(userRequest.getFirstName().isEmpty()){
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_FIRSTNAME)
+                    .data(null)
+                    .build();
         }
+        if(userRequest.getLastName().isBlank()){
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_LASTNAME)
+                    .data(null)
+                    .build();
+        }
+        if(userRequest.getPhoneNumber().isEmpty()){
+            return UserResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
+                    .data(null)
+                    .build();
+        }
+        if (!isInputValid(userRequest.getPhoneNumber(), phoneNumberRegex)) {
+                return UserResponse.builder()
+                        .responseCode(Response.BAD_REQUEST_CODE)
+                        .responseMessage(Response.BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT)
+                        .data(null)
+                        .build();
+            }
+
         AppUser user = AppUser.builder()
                 .email(IDGenerator.generateEmail(userRequest.getFirstName(), userRequest.getLastName()))
                 .firstName(userRequest.getFirstName())
@@ -101,7 +150,7 @@ user.setRoles(Collections.singleton(studentRoles));
                         .password(savedUser.getPassword())
                         .build())
                 .build();
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return response;
 
     }
 
@@ -131,5 +180,11 @@ user.setRoles(Collections.singleton(studentRoles));
                         .build())
                 .build()).toList();
         return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    private boolean isInputValid(String input, String regex) {
+        return Pattern.compile(regex)
+                .matcher(input)
+                .matches();
     }
 }

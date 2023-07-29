@@ -25,8 +25,10 @@ public class IDGenerator {
     }
 
     public static String generateEmail(String firstname, String lastname) {
-        String schoolMail = "@Viteruni.org";
-        return firstname + "." + lastname + schoolMail;
+        StringBuilder sb = new StringBuilder();
+        String schoolMail = "@ViterUni.org";
+        return sb.append(firstname).append(".").append(lastname).append(schoolMail).toString();
+//        return newMail;
     }
 
     public static String generateDefaultPassword(int length) {
