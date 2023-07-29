@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface UserService {
-    ResponseEntity<UserResponse> signUpForStudents(UserRequest userRequest);
-    ResponseEntity<UserResponse> signUpForStaffs(UserRequest userRequest);
+    UserResponse signUpForStudents(UserRequest userRequest);
+    UserResponse signUpForStaffs(UserRequest userRequest);
 
     ResponseEntity<List<UserResponse>> getAllStudents();
     ResponseEntity<List<UserResponse>> getAllStaffs();
