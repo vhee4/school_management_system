@@ -26,7 +26,7 @@ public class IDGenerator {
 
     public static String generateEmail(String firstname, String lastname) {
         StringBuilder sb = new StringBuilder();
-        String schoolMail = "@ViterUni.org";
+        String schoolMail = "@viteruni.org";
         return sb.append(firstname).append(".").append(lastname).append(schoolMail).toString();
 //        return newMail;
     }
