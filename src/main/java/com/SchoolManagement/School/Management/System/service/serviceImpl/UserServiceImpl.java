@@ -1,19 +1,22 @@
 package com.SchoolManagement.School.Management.System.service.serviceImpl;
 
-import com.SchoolManagement.School.Management.System.dtos.Data;
-import com.SchoolManagement.School.Management.System.dtos.UserRequest;
-import com.SchoolManagement.School.Management.System.dtos.UserResponse;
+import com.SchoolManagement.School.Management.System.dtos.*;
 import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
+import com.SchoolManagement.School.Management.System.exception.ApplicationAuthenticationException;
 import com.SchoolManagement.School.Management.System.exception.NoRoleFoundException;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
 import com.SchoolManagement.School.Management.System.repository.UserRepository;
+import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
+import com.SchoolManagement.School.Management.System.security.JWTTokenUtil;
 import com.SchoolManagement.School.Management.System.service.UserService;
 import com.SchoolManagement.School.Management.System.utils.IDGenerator;
 import com.SchoolManagement.School.Management.System.utils.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -26,6 +29,10 @@ import java.util.regex.Pattern;
 public class UserServiceImpl implements UserService {
     public final UserRepository userRepository;
     public final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final CachingUserDetailsService userDetailsService;
+    private final JWTTokenUtil jwtTokenUtil;
     String phoneNumberRegex = "(^$|(234\\d{10})|(\\d{11}))";//phone number accepts only 13 digits starting with 234
 
 
@@ -76,7 +83,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(userRequest.getLastName())
                 .email(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()))
                 .phoneNumber(userRequest.getPhoneNumber())
-                .password(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD))
+                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD)))
                 .studentId(IDGenerator.generateStudentID())
                 .roles(Collections.singleton(studentRole))
                 .build();
@@ -186,5 +193,37 @@ public class UserServiceImpl implements UserService {
         return Pattern.compile(regex)
                 .matcher(input)
                 .matches();
+    }
+
+    @Override
+    public ResponseEntity<UserResponse> authenticateUser(LoginRequest loginRequest) throws Exception {
+            authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+            final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
+            AppUser user = userRepository.findByEmail(userDetails.getUsername()).get();
+            final String access_token = jwtTokenUtil.generateToken(userDetails);
+        LoginResponse response = LoginResponse.builder()
+                .access_token(access_token)
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .staffId(user.getStaffId())
+                .studentId(user.getStudentId())
+                .phoneNumber(user.getPhoneNumber())
+                .isEnabled(user.isEnabled())
+                .build();
+
+            return ResponseEntity.ok(new UserResponse(HttpStatus.OK.name(), "Login successfully", response));
+    }
+
+    private void authenticateUser(String username, String password) throws Exception {
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        }catch (DisabledException e){
+            throw new Exception("USER_DISABLED", e);
+        }catch (BadCredentialsException e){
+            throw new ApplicationAuthenticationException("Invalid username or password combination", e);
+        }
+
     }
 }

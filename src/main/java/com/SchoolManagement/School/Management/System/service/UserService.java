@@ -1,5 +1,6 @@
 package com.SchoolManagement.School.Management.System.service;
 
+import com.SchoolManagement.School.Management.System.dtos.LoginRequest;
 import com.SchoolManagement.School.Management.System.dtos.UserRequest;
 import com.SchoolManagement.School.Management.System.dtos.UserResponse;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ public interface UserService {
 
     ResponseEntity<List<UserResponse>> getAllStudents();
     ResponseEntity<List<UserResponse>> getAllStaffs();
+
+    ResponseEntity<UserResponse> authenticateUser(LoginRequest loginRequest) throws Exception;
 
 
 }

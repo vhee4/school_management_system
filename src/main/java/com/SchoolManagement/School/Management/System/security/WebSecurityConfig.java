@@ -16,9 +16,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtRequestFilter jwtRequestFilter;
-    private static final String[] UN_SECURED_URL = {
+    private final JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JWTRequestFilter jwtRequestFilter;
+    private static final String[] STUDENT_ENDPOINTS = {
             "/api/v1/user/**",
             "/api/v1/auth/**",
             "/api/v1/user-role/**",
@@ -32,38 +32,34 @@ public class WebSecurityConfig {
             "/swagger-ui.html"
     };
 
-    private static final String[] ADMIN_SECURED_URL = {
+    private static final String[] ADMIN_ENDPOINTS = {
             "/api/v1/user-role/**",
             "/api/v1/admin/**"
 
     };
 
-    private static final String[] CUSTOMER_SECURED_URL = {
+    private static final String[] STAFF_ENDPOINTS = {
             "/api/v1/auth/user/**",
             "/api/v1/payment/**"
 
     };
 
-    private static final String[] VENDOR_SECURED_URL = {
-            "/api/v1/product/**"
-
-    };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .authorizeRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(UN_SECURED_URL).permitAll()
-                        .requestMatchers(ADMIN_SECURED_URL).hasRole("ADMIN")
-                        .requestMatchers(VENDOR_SECURED_URL).hasRole("VENDOR")
-                        .requestMatchers(CUSTOMER_SECURED_URL).hasRole("USER")
-                        .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(STUDENT_ENDPOINTS).permitAll()
+                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
+                        .requestMatchers(STAFF_ENDPOINTS).hasRole("STAFF")
+                        .anyRequest().authenticated()
                 )
-                .csrf().disable()
-                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .cors(cors -> cors.disable())
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .sessionManagement((sessionManagement) ->
+                        sessionManagement
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
