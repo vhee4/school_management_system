@@ -14,15 +14,15 @@ import java.util.Collection;
 @Entity
 @Data
 @Builder
-//@NoArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user")
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NaturalId(mutable = false)
     private Long id;
     @Email
+    @NaturalId(mutable = false)
     private String email;
     private String firstName;
     private String lastName;
@@ -30,8 +30,8 @@ public class AppUser {
     private String password;
     private String staffId;
     private String studentId;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH})
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Collection<Roles> roles;
     private boolean isEnabled = false;

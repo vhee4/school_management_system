@@ -5,12 +5,12 @@ import com.SchoolManagement.School.Management.System.dtos.UserRequest;
 import com.SchoolManagement.School.Management.System.dtos.UserResponse;
 import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
+import com.SchoolManagement.School.Management.System.exception.NoRoleFoundException;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
 import com.SchoolManagement.School.Management.System.repository.UserRepository;
 import com.SchoolManagement.School.Management.System.service.UserService;
 import com.SchoolManagement.School.Management.System.utils.IDGenerator;
 import com.SchoolManagement.School.Management.System.utils.Response;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +59,18 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
+        Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
+        Roles studentRole = null;
+        if(!roles.isPresent()){
+            Roles defaultRole = Roles.builder()
+                    .name("ROLE_STUDENT")
+                    .build();
+            studentRole = roleRepository.save(defaultRole);
+        }else{
+            studentRole = roles.get();
+        }
+
+
         AppUser user = AppUser.builder()
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
@@ -66,20 +78,8 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(userRequest.getPhoneNumber())
                 .password(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD))
                 .studentId(IDGenerator.generateStudentID())
-//                .roles(Collections.singleton(studentRoles))
+                .roles(Collections.singleton(studentRole))
                 .build();
-
-//        Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
-//        Roles studentRoles = null;
-//        if (roles.isPresent()) {
-//            studentRoles = roles.get();
-//        } else {
-//            Roles defaultStudentRole = Roles.builder()
-//                    .name("ROLE_STUDENT")
-//                    .build();
-//            studentRoles = roleRepository.save(defaultStudentRole);
-//        }
-//user.setRoles(Collections.singleton(studentRoles));
 
         AppUser savedUser = userRepository.save(user);
 
