@@ -14,3 +14,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+#jwt
+jwt:
+  access:
+    expiration:
+      milliseconds: 900000
+  refresh:
+    expiration:
+      milliseconds: 3000000
+  secret: securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecucuresecuresecuresecure
