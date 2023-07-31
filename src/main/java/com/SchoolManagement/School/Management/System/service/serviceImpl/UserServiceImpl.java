@@ -4,9 +4,9 @@ import com.SchoolManagement.School.Management.System.dtos.*;
 import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
 import com.SchoolManagement.School.Management.System.exception.ApplicationAuthenticationException;
-import com.SchoolManagement.School.Management.System.exception.NoRoleFoundException;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
 import com.SchoolManagement.School.Management.System.repository.UserRepository;
+import com.SchoolManagement.School.Management.System.security.CustomUserDetailService;
 import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
 import com.SchoolManagement.School.Management.System.security.JWTTokenUtil;
 import com.SchoolManagement.School.Management.System.service.UserService;
@@ -31,35 +31,35 @@ public class UserServiceImpl implements UserService {
     public final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final CachingUserDetailsService userDetailsService;
+    private final CustomUserDetailService userDetailsService;
     private final JWTTokenUtil jwtTokenUtil;
     String phoneNumberRegex = "(^$|(234\\d{10})|(\\d{11}))";//phone number accepts only 13 digits starting with 234
 
 
     @Override
-    public UserResponse signUpForStudents(UserRequest userRequest) {
+    public CustomResponse signUpForStudents(UserRequest userRequest) {
         if(userRequest.getFirstName().isEmpty()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_FIRSTNAME)
                     .data(null)
                     .build();
         }
         if(userRequest.getLastName().isBlank()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_LASTNAME)
                     .data(null)
                     .build();
         }
         if(userRequest.getPhoneNumber().isBlank()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
                     .data(null)
                     .build();}
         if (!isInputValid(userRequest.getPhoneNumber(), phoneNumberRegex)) {
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT)
                     .data(null)
@@ -83,14 +83,14 @@ public class UserServiceImpl implements UserService {
                 .lastName(userRequest.getLastName())
                 .email(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()))
                 .phoneNumber(userRequest.getPhoneNumber())
-                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD)))
+                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())))
                 .studentId(IDGenerator.generateStudentID())
                 .roles(Collections.singleton(studentRole))
                 .build();
 
         AppUser savedUser = userRepository.save(user);
 
-        return UserResponse.builder()
+        return CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.USER_REGISTERED_SUCCESS)
                 .data(Data.builder()
@@ -104,30 +104,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse signUpForStaffs(UserRequest userRequest) {
+    public CustomResponse signUpForStaffs(UserRequest userRequest) {
         if(userRequest.getFirstName().isEmpty()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_FIRSTNAME)
                     .data(null)
                     .build();
         }
         if(userRequest.getLastName().isBlank()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_LASTNAME)
                     .data(null)
                     .build();
         }
         if(userRequest.getPhoneNumber().isEmpty()){
-            return UserResponse.builder()
+            return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
                     .data(null)
                     .build();
         }
         if (!isInputValid(userRequest.getPhoneNumber(), phoneNumberRegex)) {
-                return UserResponse.builder()
+                return CustomResponse.builder()
                         .responseCode(Response.BAD_REQUEST_CODE)
                         .responseMessage(Response.BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT)
                         .data(null)
@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
                 .phoneNumber(userRequest.getPhoneNumber())
-                .password(IDGenerator.generateDefaultPassword(IDGenerator.LENGTH_OF_PASSWORD))
+                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())))
                 .studentId(IDGenerator.generateStaffID())
                 .build();
 //        Roles role = roleRepository.findByRoleName("USER");
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
 
         AppUser savedUser = userRepository.save(user);
 
-        UserResponse response = UserResponse.builder()
+        CustomResponse response = CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.USER_REGISTERED_SUCCESS)
                 .data(Data.builder()
@@ -161,9 +161,9 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    public ResponseEntity<List<UserResponse>> getAllStudents() {
+    public ResponseEntity<List<CustomResponse>> getAllStudents() {
         List<AppUser> users = userRepository.findAll();
-        List<UserResponse> responses = users.stream().map(allStudents -> UserResponse.builder()
+        List<CustomResponse> responses = users.stream().map(allStudents -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
                 .data(Data.builder()
@@ -175,9 +175,9 @@ public class UserServiceImpl implements UserService {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<UserResponse>> getAllStaffs() {
+    public ResponseEntity<List<CustomResponse>> getAllStaffs() {
         List<AppUser> users = userRepository.findAll();
-        List<UserResponse> responses = users.stream().map(allStaffs -> UserResponse.builder()
+        List<CustomResponse> responses = users.stream().map(allStaffs -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
                 .data(Data.builder()
@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<UserResponse> authenticateUser(LoginRequest loginRequest) throws Exception {
+    public ResponseEntity<CustomResponse> authenticateUser(LoginRequest loginRequest) throws Exception {
             authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
             final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
             AppUser user = userRepository.findByEmail(userDetails.getUsername()).get();
@@ -212,7 +212,7 @@ public class UserServiceImpl implements UserService {
                 .isEnabled(user.isEnabled())
                 .build();
 
-            return ResponseEntity.ok(new UserResponse(HttpStatus.OK.name(), "Login successfully", response));
+            return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
     }
 
     private void authenticateUser(String username, String password) throws Exception {

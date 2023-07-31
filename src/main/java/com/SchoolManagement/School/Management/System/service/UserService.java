@@ -2,19 +2,19 @@ package com.SchoolManagement.School.Management.System.service;
 
 import com.SchoolManagement.School.Management.System.dtos.LoginRequest;
 import com.SchoolManagement.School.Management.System.dtos.UserRequest;
-import com.SchoolManagement.School.Management.System.dtos.UserResponse;
+import com.SchoolManagement.School.Management.System.dtos.CustomResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface UserService {
-    UserResponse signUpForStudents(UserRequest userRequest);
-    UserResponse signUpForStaffs(UserRequest userRequest);
+    CustomResponse signUpForStudents(UserRequest userRequest);
+    CustomResponse signUpForStaffs(UserRequest userRequest);
 
-    ResponseEntity<List<UserResponse>> getAllStudents();
-    ResponseEntity<List<UserResponse>> getAllStaffs();
+    ResponseEntity<List<CustomResponse>> getAllStudents();
+    ResponseEntity<List<CustomResponse>> getAllStaffs();
 
-    ResponseEntity<UserResponse> authenticateUser(LoginRequest loginRequest) throws Exception;
+    ResponseEntity<CustomResponse> authenticateUser(LoginRequest loginRequest) throws Exception;
 
 
 }

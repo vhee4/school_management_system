@@ -18,10 +18,9 @@ public class WebSecurityConfig {
 
     private final JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JWTRequestFilter jwtRequestFilter;
-    private static final String[] STUDENT_ENDPOINTS = {
+    private static final String[] UNSECURE_ENDPOINTS = {
             "/api/v1/user/**",
             "/api/v1/auth/**",
-            "/api/v1/user-role/**",
             "/v2/api-docs",
             "/v3/api-docs/**",
             "/swagger-resources",
@@ -32,15 +31,17 @@ public class WebSecurityConfig {
             "/swagger-ui.html"
     };
 
+    private static final String[] STUDENT_ENDPOINTS = {
+            "/api/v1/student/**",
+    };
+
     private static final String[] ADMIN_ENDPOINTS = {
-            "/api/v1/user-role/**",
             "/api/v1/admin/**"
 
     };
 
     private static final String[] STAFF_ENDPOINTS = {
-            "/api/v1/auth/user/**",
-            "/api/v1/payment/**"
+            "/api/v1/staff/**",
 
     };
 
@@ -48,12 +49,13 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .authorizeRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(STUDENT_ENDPOINTS).permitAll()
+                        .requestMatchers(UNSECURE_ENDPOINTS).permitAll()
                         .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .requestMatchers(STAFF_ENDPOINTS).hasRole("STAFF")
+                        .requestMatchers(STUDENT_ENDPOINTS).hasRole("STUDENT")
                         .anyRequest().authenticated()
                 )
-                .cors(cors -> cors.disable())
+                //.cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -65,10 +67,7 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+
 
 
 }

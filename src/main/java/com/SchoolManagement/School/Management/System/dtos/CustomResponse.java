@@ -1,5 +1,6 @@
 package com.SchoolManagement.School.Management.System.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -8,14 +9,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CustomResponse {
     private String responseCode;
     private String responseMessage;
     private Object data;
 
 
 
-    public UserResponse(String responseCode, String responseMessage) {
+    public CustomResponse(String responseCode, String responseMessage) {
         this.responseCode = responseCode;
         this.responseMessage = responseMessage;
     }

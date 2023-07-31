@@ -3,6 +3,8 @@ package com.SchoolManagement.School.Management.System.utils;
 import org.springframework.boot.SpringApplication;
 
 import java.time.Year;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 public class IDGenerator {
@@ -31,21 +33,30 @@ public class IDGenerator {
 //        return newMail;
     }
 
-    public static String generateDefaultPassword(int length) {
-        String uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String lowercaseLetters = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "0123456789";
+    public static String generateDefaultPassword(String firstName) {
+//        String uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//        String lowercaseLetters = "abcdefghijklmnopqrstuvwxyz";
+//        String numbers = "0123456789";
+//
+//        String allowedChars = uppercaseLetters + lowercaseLetters + numbers;
+//        StringBuilder password = new StringBuilder();
+//
+//        Random random = new Random();
+//        for (int i = 0; i < length; i++) {
+//            int index = random.nextInt(allowedChars.length());
+//            password.append(allowedChars.charAt(index));
+//        }
+//
+//        return password.toString();
+        Date date = new Date();
+        int yearOfRegistration = getYearFromDate(date);
+        return firstName+yearOfRegistration;
+    }
 
-        String allowedChars = uppercaseLetters + lowercaseLetters + numbers;
-        StringBuilder password = new StringBuilder();
-
-        Random random = new Random();
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(allowedChars.length());
-            password.append(allowedChars.charAt(index));
-        }
-
-        return password.toString();
+    public static int getYearFromDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.YEAR);
     }
 
 }
