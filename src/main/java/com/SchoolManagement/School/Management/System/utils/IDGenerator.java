@@ -29,7 +29,7 @@ public class IDGenerator {
     public static String generateEmail(String firstname, String lastname) {
         StringBuilder sb = new StringBuilder();
         String schoolMail = "@viteruni.org";
-        return sb.append(firstname).append(".").append(lastname).append(schoolMail).toString();
+        return sb.append(firstname).append(".").append(lastname).append(schoolMail).toString().toLowerCase();
 //        return newMail;
     }
 
@@ -50,7 +50,8 @@ public class IDGenerator {
 //        return password.toString();
         Date date = new Date();
         int yearOfRegistration = getYearFromDate(date);
-        return firstName+yearOfRegistration;
+        String defaultPassword = firstName+yearOfRegistration;
+        return defaultPassword.toLowerCase();
     }
 
     public static int getYearFromDate(Date date) {

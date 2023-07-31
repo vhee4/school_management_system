@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 @Component
 public class JWTTokenUtil implements Serializable {
-    private static final long JWT_TOKEN_VALIDITY = 10*60*60;
+    private static final long JWT_TOKEN_VALIDITY = 3*60*60;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -47,7 +47,7 @@ public class JWTTokenUtil implements Serializable {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+ JWT_TOKEN_VALIDITY))
+                .setExpiration(new Date(System.currentTimeMillis()+ JWT_TOKEN_VALIDITY * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
 
