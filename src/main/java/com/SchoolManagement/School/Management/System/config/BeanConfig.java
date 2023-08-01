@@ -1,9 +1,9 @@
 package com.SchoolManagement.School.Management.System.config;
 
-import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
+import com.SchoolManagement.School.Management.System.entity.StaffEntity;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
-import com.SchoolManagement.School.Management.System.repository.UserRepository;
+import com.SchoolManagement.School.Management.System.repository.StaffRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Configuration
 @RequiredArgsConstructor
 public class BeanConfig {
-    private final UserRepository userRepository;
+    private final StaffRepository staffRepository;
     private final RoleRepository roleRepository;
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -39,7 +39,7 @@ public class BeanConfig {
 
             transactionTemplate.execute(status -> {
 
-                if (!userRepository.findByEmail("admin@viteruni.org").isPresent()) {
+                if (!staffRepository.findByEmail("admin@viteruni.org").isPresent()) {
                     Optional<Roles> role = roleRepository.findByName("ROLE_ADMIN");
                     Roles adminRole = null;
                     if(!role.isPresent()){
@@ -51,17 +51,16 @@ public class BeanConfig {
                         adminRole = role.get();
                     }
 
-                    AppUser newUser = AppUser.builder()
-                            .email("admin@viteruni.org")
-                            .firstName("Vivian")
-                            .lastName("Chioma")
-                            .isEnabled(true)
-                            .roles(Collections.singleton(adminRole))
-                            .password(passwordEncoder().encode("admin"))
-                            .build();
+                    StaffEntity newUser = new StaffEntity();
+                            newUser.setEmail("admin@viteruni.org");
+                    newUser.setFirstName("Vivian");
+                    newUser.setLastName("Chioma");
+                    newUser.setEnabled(true);
+                    newUser.setRoles(Collections.singleton(adminRole));
+                    newUser.setPassword(passwordEncoder().encode("admin"));
 
 //                    entityManager.persist(role); // Save the UserRole entity
-                    userRepository.save(newUser); // Save the UserEntity entity
+                    staffRepository.save(newUser); // Save the UserEntity entity
                 }
                 return null;
             });

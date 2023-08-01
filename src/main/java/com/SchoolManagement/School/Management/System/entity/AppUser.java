@@ -6,17 +6,17 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Collection;
 
-@Entity
-@Data
-@Builder
+@MappedSuperclass
+@EntityListeners({StaffEntity.class, StudentEntity.class})
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user")
+@Data
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +28,6 @@ public class AppUser {
     private String lastName;
     private String phoneNumber;
     private String password;
-    private String staffId;
-    private String studentId;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH})
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Collection<Roles> roles;
     private boolean isEnabled = false;
     private Timestamp createdOn;
     private Timestamp lastModifiedOn;

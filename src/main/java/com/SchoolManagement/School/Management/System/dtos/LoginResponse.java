@@ -12,8 +12,8 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private String staffId;
-    private String studentId;
+    private String Id;
+//    private String studentId;
     private String access_token;
     private boolean isEnabled;
 }

@@ -3,9 +3,12 @@ package com.SchoolManagement.School.Management.System.service.serviceImpl;
 import com.SchoolManagement.School.Management.System.dtos.*;
 import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
+import com.SchoolManagement.School.Management.System.entity.StaffEntity;
+import com.SchoolManagement.School.Management.System.entity.StudentEntity;
 import com.SchoolManagement.School.Management.System.exception.ApplicationAuthenticationException;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
-import com.SchoolManagement.School.Management.System.repository.UserRepository;
+import com.SchoolManagement.School.Management.System.repository.StaffRepository;
+import com.SchoolManagement.School.Management.System.repository.StudentRepository;
 import com.SchoolManagement.School.Management.System.security.CustomUserDetailService;
 import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
 import com.SchoolManagement.School.Management.System.security.JWTTokenUtil;
@@ -13,8 +16,6 @@ import com.SchoolManagement.School.Management.System.service.UserService;
 import com.SchoolManagement.School.Management.System.utils.IDGenerator;
 import com.SchoolManagement.School.Management.System.utils.Response;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -27,7 +28,8 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    public final UserRepository userRepository;
+    public final StaffRepository staffRepository;
+    public final StudentRepository studentRepository;
     public final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -77,18 +79,16 @@ public class UserServiceImpl implements UserService {
             studentRole = roles.get();
         }
 
+        StudentEntity student = new StudentEntity();
+        student.setFirstName(userRequest.getFirstName());
+        student.setLastName(userRequest.getLastName());
+        student.setEmail(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()));
+        student.setPassword(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())));
+        student.setPhoneNumber(userRequest.getPhoneNumber());
+        student.setStudentId(IDGenerator.generateStudentID());
+        student.setRoles(Collections.singleton(studentRole));
 
-        AppUser user = AppUser.builder()
-                .firstName(userRequest.getFirstName())
-                .lastName(userRequest.getLastName())
-                .email(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()))
-                .phoneNumber(userRequest.getPhoneNumber())
-                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())))
-                .studentId(IDGenerator.generateStudentID())
-                .roles(Collections.singleton(studentRole))
-                .build();
-
-        AppUser savedUser = userRepository.save(user);
+        StudentEntity savedUser = studentRepository.save(student);
 
         return CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
@@ -134,20 +134,18 @@ public class UserServiceImpl implements UserService {
                         .build();
             }
 
-        AppUser user = AppUser.builder()
-                .email(IDGenerator.generateEmail(userRequest.getFirstName(), userRequest.getLastName()))
-                .firstName(userRequest.getFirstName())
-                .lastName(userRequest.getLastName())
-                .phoneNumber(userRequest.getPhoneNumber())
-                .password(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())))
-                .studentId(IDGenerator.generateStaffID())
-                .build();
-//        Roles role = roleRepository.findByRoleName("USER");
-//        user.setRoles(Collections.singleton(role));
+        StaffEntity staff = new StaffEntity();
+        staff.setFirstName(userRequest.getFirstName());
+        staff.setLastName(userRequest.getLastName());
+        staff.setEmail(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()));
+        staff.setPassword(passwordEncoder.encode(IDGenerator.generateDefaultPassword(userRequest.getFirstName())));
+        staff.setPhoneNumber(userRequest.getPhoneNumber());
+        staff.setStaffId(IDGenerator.generateStaffID());
+//        staff.setRoles(Collections.singleton(staff));
 
-        AppUser savedUser = userRepository.save(user);
+        StaffEntity savedUser = staffRepository.save(staff);
 
-        CustomResponse response = CustomResponse.builder()
+        return CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.USER_REGISTERED_SUCCESS)
                 .data(Data.builder()
@@ -157,12 +155,11 @@ public class UserServiceImpl implements UserService {
                         .password(savedUser.getPassword())
                         .build())
                 .build();
-        return response;
 
     }
 
     public ResponseEntity<List<CustomResponse>> getAllStudents() {
-        List<AppUser> users = userRepository.findAll();
+        List<StudentEntity> users = studentRepository.findAll();
         List<CustomResponse> responses = users.stream().map(allStudents -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
@@ -176,7 +173,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public ResponseEntity<List<CustomResponse>> getAllStaffs() {
-        List<AppUser> users = userRepository.findAll();
+        List<StaffEntity> users = staffRepository.findAll();
         List<CustomResponse> responses = users.stream().map(allStaffs -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
@@ -197,23 +194,62 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<CustomResponse> authenticateUser(LoginRequest loginRequest) throws Exception {
-            authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
-            final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
-            AppUser user = userRepository.findByEmail(userDetails.getUsername()).get();
-            final String access_token = jwtTokenUtil.generateToken(userDetails);
-        LoginResponse response = LoginResponse.builder()
-                .access_token(access_token)
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .staffId(user.getStaffId())
-                .studentId(user.getStudentId())
-                .phoneNumber(user.getPhoneNumber())
-                .isEnabled(user.isEnabled())
-                .build();
+            try {
+                authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+                final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
+                StaffEntity staff = staffRepository.findByEmail(userDetails.getUsername()).orElse(null);
+                StudentEntity student = studentRepository.findByEmail(userDetails.getUsername()).orElse(null);
 
+                if (student != null && student.getPassword().equals(loginRequest.getPassword())) {
+                    LoginResponse response = ResponseEntity.ok(LoginResponse.builder()
+                            .access_token(jwtTokenUtil.generateToken(userDetails))
+                            .email(student.getEmail())
+                            .firstName(student.getFirstName())
+                            .lastName(student.getLastName())
+                            .Id(student.getStudentId())
+                            .phoneNumber(student.getPhoneNumber())
+                            .isEnabled(student.isEnabled())
+                            .build()).getBody();
+                    return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
+
+                } else if (staff != null && staff.getPassword().equals(loginRequest.getPassword())) {
+                    LoginResponse response =  ResponseEntity.ok(LoginResponse.builder()
+                            .access_token(jwtTokenUtil.generateToken(userDetails))
+                            .email(staff.getEmail())
+                            .firstName(staff.getFirstName())
+                            .lastName(staff.getLastName())
+                            .Id(staff.getStaffId())
+                            .phoneNumber(staff.getPhoneNumber())
+                            .isEnabled(staff.isEnabled())
+                            .build()).getBody();
             return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
-    }
+
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(new CustomResponse(HttpStatus.UNAUTHORIZED.name(), "Invalid credentials", null));
+                }
+            } catch (Exception ex) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new CustomResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), "An error occurred", null));
+            }
+        }
+//            authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+//            final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
+//            AppUser user = userRepository.findByEmail(userDetails.getUsername()).get();
+//            final String access_token = jwtTokenUtil.generateToken(userDetails);
+//        LoginResponse response = LoginResponse.builder()
+//                .access_token(access_token)
+//                .email(user.getEmail())
+//                .firstName(user.getFirstName())
+//                .lastName(user.getLastName())
+//                .staffId(user.getStaffId())
+//                .studentId(user.getStudentId())
+//                .phoneNumber(user.getPhoneNumber())
+//                .isEnabled(user.isEnabled())
+//                .build();
+//
+//            return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
+
 
     private void authenticateUser(String username, String password) throws Exception {
         try{

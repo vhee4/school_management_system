@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 @Data
 @Builder
-@Table(name = "user_role")
+@Table(name = "role")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Roles {
@@ -26,7 +26,9 @@ public class Roles {
     private String name;
     @JsonIgnore
     @ManyToMany(mappedBy = "roles")
-    private Collection<AppUser> users = new HashSet<>();
+    private Collection<StaffEntity> staffs = new HashSet<>();
+    @ManyToMany(mappedBy = "roles")
+    private Collection<StudentEntity> students = new HashSet<>();
 
     public Roles(String name) {
         this.name = name;
@@ -34,21 +36,29 @@ public class Roles {
 
     // remove all users from role
     public void removeAllUsersFromRole(){
-        if(this.getUsers() != null){
-            List<AppUser> usersInRole = this.getUsers().stream().toList();
-            usersInRole.forEach(this::removeUserFromRole);
+        if(this.getStaffs() != null || this.getStudents() !=null){
+            List<StaffEntity> staffsInRole = this.getStaffs().stream().toList();
+            List<StudentEntity> studentsInRole = this.getStudents().stream().toList();
+            staffsInRole.forEach(this::removeStaffFromRole);
+            studentsInRole.forEach(this::removeStudentFromRole);
         }
     }
 
     // remove single user from role
-    public void removeUserFromRole(AppUser user) {
-        user.getRoles().remove(this);
-        this.getUsers().remove(user);
+    public void removeStaffFromRole(StaffEntity staff) {
+        staff.getRoles().remove(this);
+        this.getStaffs().remove(staff);
+    }public void removeStudentFromRole(StudentEntity student) {
+        student.getRoles().remove(this);
+        this.getStaffs().remove(student);
     }
 
     // assign role to user
-    public void assignUserToRole(AppUser user){
-        user.getRoles().add(this);
-        this.getUsers().add(user);
+    public void assignStaffToRole(StaffEntity staff){
+        staff.getRoles().add(this);
+        this.getStaffs().add(staff);
+    }public void assignStudentToRole(StudentEntity student){
+        student.getRoles().add(this);
+        this.getStudents().add(student);
     }
 }

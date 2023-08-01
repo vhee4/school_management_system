@@ -21,9 +21,9 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(AppUser user) {
         this.username = user.getEmail();
         this.password = user.getPassword();
-        this.authorities = user.getRoles().stream()
-                .map(Roles::getName)
-                .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+//        this.authorities = user..stream()
+//                .map(Roles::getName)
+//                .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.isEnabled = user.isEnabled();
     }
 

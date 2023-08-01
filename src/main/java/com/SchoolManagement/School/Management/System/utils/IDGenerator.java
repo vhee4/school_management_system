@@ -2,6 +2,7 @@ package com.SchoolManagement.School.Management.System.utils;
 
 import org.springframework.boot.SpringApplication;
 
+import java.security.SecureRandom;
 import java.time.Year;
 import java.util.Calendar;
 import java.util.Date;
@@ -9,10 +10,6 @@ import java.util.Random;
 
 public class IDGenerator {
     public static final int LENGTH_OF_PASSWORD = 10;
-
-//    public static void main(String[] args) {
-//        System.out.println(generateDefaultPassword(LENGTH_OF_PASSWORD));
-//    }
 
     public static String generateStaffID() {
         int randomNumber = new Random().nextInt(9999) + 1;
@@ -28,9 +25,9 @@ public class IDGenerator {
 
     public static String generateEmail(String firstname, String lastname) {
         StringBuilder sb = new StringBuilder();
+        int random = new SecureRandom().nextInt(999)+1;
         String schoolMail = "@viteruni.org";
-        return sb.append(firstname).append(".").append(lastname).append(schoolMail).toString().toLowerCase();
-//        return newMail;
+        return sb.append(firstname).append(".").append(lastname).append(String.format("%02d",random)).append(schoolMail).toString().toLowerCase();
     }
 
     public static String generateDefaultPassword(String firstName) {
