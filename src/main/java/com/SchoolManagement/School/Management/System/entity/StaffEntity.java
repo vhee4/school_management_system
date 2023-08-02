@@ -1,6 +1,7 @@
 package com.SchoolManagement.School.Management.System.entity;
 
 
+import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -220,7 +220,7 @@ public class UserServiceImpl implements UserService {
                 StaffEntity staff = staffRepository.findByEmail(userDetails.getUsername()).orElse(null);
                 StudentEntity student = studentRepository.findByEmail(userDetails.getUsername()).orElse(null);
 
-                if (student != null && student.getPassword().equals(loginRequest.getPassword())) {
+                if (student != null && passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
                     LoginResponse response = ResponseEntity.ok(LoginResponse.builder()
                             .access_token(jwtTokenUtil.generateToken(userDetails))
                             .email(student.getEmail())
@@ -232,7 +232,7 @@ public class UserServiceImpl implements UserService {
                             .build()).getBody();
                     return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
 
-                } else if (staff != null && staff.getPassword().equals(loginRequest.getPassword())) {
+                } else if (staff != null && passwordEncoder.matches(loginRequest.getPassword(), staff.getPassword())) {
                     LoginResponse response =  ResponseEntity.ok(LoginResponse.builder()
                             .access_token(jwtTokenUtil.generateToken(userDetails))
                             .email(staff.getEmail())
@@ -242,7 +242,7 @@ public class UserServiceImpl implements UserService {
                             .phoneNumber(staff.getPhoneNumber())
                             .isEnabled(staff.isEnabled())
                             .build()).getBody();
-            return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
+                        return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
 
                 } else {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -253,23 +253,6 @@ public class UserServiceImpl implements UserService {
                         .body(new CustomResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), "An error occurred", null));
             }
         }
-//            authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
-//            final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
-//            AppUser user = userRepository.findByEmail(userDetails.getUsername()).get();
-//            final String access_token = jwtTokenUtil.generateToken(userDetails);
-//        LoginResponse response = LoginResponse.builder()
-//                .access_token(access_token)
-//                .email(user.getEmail())
-//                .firstName(user.getFirstName())
-//                .lastName(user.getLastName())
-//                .staffId(user.getStaffId())
-//                .studentId(user.getStudentId())
-//                .phoneNumber(user.getPhoneNumber())
-//                .isEnabled(user.isEnabled())
-//                .build();
-//
-//            return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
-
 
     private void authenticateUser(String username, String password) throws Exception {
         try{
