@@ -250,7 +250,7 @@ public class UserServiceImpl implements UserService {
                 }
             } catch (Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new CustomResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), "An error occurred", null));
+                        .body(new CustomResponse(HttpStatus.UNAUTHORIZED.name(), "Invalid username or password combination", null));
             }
         }
 
