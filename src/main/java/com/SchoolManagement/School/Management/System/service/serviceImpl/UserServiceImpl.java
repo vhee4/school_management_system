@@ -60,12 +60,22 @@ public class UserServiceImpl implements UserService {
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
                     .data(null)
                     .build();}
+
         if (!isInputValid(userRequest.getPhoneNumber(), phoneNumberRegex)) {
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT)
                     .data(null)
                     .build();
+        }
+        boolean isExists = studentRepository.existsByPhoneNumber(userRequest.getPhoneNumber());
+        if(isExists){
+            return CustomResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER_ALREADY_EXISTS)
+                    .data(null)
+                    .build();
+
         }
 
         Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
@@ -133,6 +143,16 @@ public class UserServiceImpl implements UserService {
                         .data(null)
                         .build();
             }
+        boolean isExists = staffRepository.existsByPhoneNumber(userRequest.getPhoneNumber());
+
+        if(isExists){
+            return CustomResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER_ALREADY_EXISTS)
+                    .data(null)
+                    .build();
+
+        }
 
         StaffEntity staff = new StaffEntity();
         staff.setFirstName(userRequest.getFirstName());

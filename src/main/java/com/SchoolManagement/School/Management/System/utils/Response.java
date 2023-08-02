@@ -8,6 +8,7 @@ public class Response {
     public static final String BAD_REQUEST_MESSAGE_LASTNAME = "Last name field must not be empty";
     public static final String BAD_REQUEST_MESSAGE_PHONENUMBER = "Phone number field must not be empty";
     public static final String BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT = "Phone number format is invalid";
+    public static final String BAD_REQUEST_MESSAGE_PHONENUMBER_ALREADY_EXISTS= "Phone number already exists";
 
     public static final String SUCCESS = "003";
     public static final String USER_REGISTERED_SUCCESS = "User successfully registered";
