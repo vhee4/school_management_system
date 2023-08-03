@@ -1,7 +1,9 @@
 package com.SchoolManagement.School.Management.System.config;
 
+import com.SchoolManagement.School.Management.System.entity.Department;
 import com.SchoolManagement.School.Management.System.entity.Roles;
-import com.SchoolManagement.School.Management.System.entity.StaffEntity;
+import com.SchoolManagement.School.Management.System.entity.Staff;
+import com.SchoolManagement.School.Management.System.repository.DepartmentRepository;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
 import com.SchoolManagement.School.Management.System.repository.StaffRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.Optional;
 public class BeanConfig {
     private final StaffRepository staffRepository;
     private final RoleRepository roleRepository;
+    private final DepartmentRepository departmentRepository;
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -39,6 +42,7 @@ public class BeanConfig {
 
             transactionTemplate.execute(status -> {
 
+
                 if (!staffRepository.findByEmail("admin@viteruni.org").isPresent()) {
                     Optional<Roles> role = roleRepository.findByName("ROLE_ADMIN");
                     Roles adminRole = null;
@@ -51,7 +55,7 @@ public class BeanConfig {
                         adminRole = role.get();
                     }
 
-                    StaffEntity newUser = new StaffEntity();
+                    Staff newUser = new Staff();
                             newUser.setEmail("admin@viteruni.org");
                     newUser.setFirstName("Vivian");
                     newUser.setLastName("Chioma");
@@ -61,6 +65,16 @@ public class BeanConfig {
 
 //                    entityManager.persist(role); // Save the UserRole entity
                     staffRepository.save(newUser); // Save the UserEntity entity
+                }
+                return null;
+            });
+            transactionTemplate.execute(status -> {
+
+                if (!departmentRepository.findByName("Science").isPresent()) {
+                    Department department = Department.builder()
+                            .name("Science")
+                            .build();
+                    departmentRepository.save(department); // Save the UserEntity entity
                 }
                 return null;
             });

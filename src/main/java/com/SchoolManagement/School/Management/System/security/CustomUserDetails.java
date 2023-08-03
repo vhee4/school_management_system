@@ -1,15 +1,13 @@
 package com.SchoolManagement.School.Management.System.security;
 
-import com.SchoolManagement.School.Management.System.entity.AppUser;
 import com.SchoolManagement.School.Management.System.entity.Roles;
-import com.SchoolManagement.School.Management.System.entity.StaffEntity;
-import com.SchoolManagement.School.Management.System.entity.StudentEntity;
+import com.SchoolManagement.School.Management.System.entity.Staff;
+import com.SchoolManagement.School.Management.System.entity.Student;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +20,7 @@ public class CustomUserDetails implements UserDetails {
     private boolean isEnabled;
     private Collection<Roles> roles;
 
-    public CustomUserDetails(StaffEntity user) {
+    public CustomUserDetails(Staff user) {
         this.username = user.getEmail();
         this.password = user.getPassword();
         this.isEnabled = user.isEnabled();
@@ -32,7 +30,7 @@ public class CustomUserDetails implements UserDetails {
 
     }
 
-    public CustomUserDetails(StudentEntity user) {
+    public CustomUserDetails(Student user) {
         this.username = user.getEmail();
         this.password = user.getPassword();
         this.isEnabled = user.isEnabled();

@@ -1,6 +1,6 @@
 package com.SchoolManagement.School.Management.System.entity;
 
-import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,11 +14,11 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "student")
-public class StudentEntity extends AppUser {
-    private String studentId;
+@Table(name = "staff")
+public class Staff extends AppUser {
+    private String staffId;
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH})
-    @JoinTable(name = "student_roles", joinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"),
+    @JoinTable(name = "staff_roles", joinColumns = @JoinColumn(name = "staff_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Collection<Roles> roles;
 }
