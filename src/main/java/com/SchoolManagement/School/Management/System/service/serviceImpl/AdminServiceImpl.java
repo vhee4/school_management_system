@@ -1,9 +1,7 @@
 package com.SchoolManagement.School.Management.System.service.serviceImpl;
 
 import com.SchoolManagement.School.Management.System.dtos.CustomResponse;
-import com.SchoolManagement.School.Management.System.entity.AppUser;
-import com.SchoolManagement.School.Management.System.entity.StaffEntity;
-import com.SchoolManagement.School.Management.System.entity.StudentEntity;
+import com.SchoolManagement.School.Management.System.entity.Student;
 import com.SchoolManagement.School.Management.System.repository.StaffRepository;
 import com.SchoolManagement.School.Management.System.repository.StudentRepository;
 import com.SchoolManagement.School.Management.System.service.AdminService;
@@ -21,12 +19,12 @@ public class AdminServiceImpl implements AdminService {
     private final StudentRepository studentRepository;
     @Override
     public ResponseEntity<CustomResponse> enableStudentAccount(String studentId) {
-        Optional<StudentEntity> existingStudentOpt = studentRepository.findByStudentId(studentId);
+        Optional<Student> existingStudentOpt = studentRepository.findByStudentId(studentId);
         if (existingStudentOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(new CustomResponse(HttpStatus.BAD_REQUEST.name(), "No student found for this id"));
         }
 
-        StudentEntity existingStudent = existingStudentOpt.get();
+        Student existingStudent = existingStudentOpt.get();
         existingStudent.setEnabled(true); // Set the isEnabled field to true
 
         studentRepository.save(existingStudent);

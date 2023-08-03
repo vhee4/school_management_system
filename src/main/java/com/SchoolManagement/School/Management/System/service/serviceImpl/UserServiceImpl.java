@@ -1,11 +1,12 @@
 package com.SchoolManagement.School.Management.System.service.serviceImpl;
 
 import com.SchoolManagement.School.Management.System.dtos.*;
-import com.SchoolManagement.School.Management.System.entity.AppUser;
+import com.SchoolManagement.School.Management.System.entity.Department;
 import com.SchoolManagement.School.Management.System.entity.Roles;
-import com.SchoolManagement.School.Management.System.entity.StaffEntity;
-import com.SchoolManagement.School.Management.System.entity.StudentEntity;
+import com.SchoolManagement.School.Management.System.entity.Staff;
+import com.SchoolManagement.School.Management.System.entity.Student;
 import com.SchoolManagement.School.Management.System.exception.ApplicationAuthenticationException;
+import com.SchoolManagement.School.Management.System.repository.DepartmentRepository;
 import com.SchoolManagement.School.Management.System.repository.RoleRepository;
 import com.SchoolManagement.School.Management.System.repository.StaffRepository;
 import com.SchoolManagement.School.Management.System.repository.StudentRepository;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailService userDetailsService;
     private final JWTTokenUtil jwtTokenUtil;
+    private final DepartmentRepository departmentRepository;
     String phoneNumberRegex = "(^$|(234\\d{10})|(\\d{11}))";//phone number accepts only 13 digits starting with 234
 
 
@@ -77,6 +79,23 @@ public class UserServiceImpl implements UserService {
                     .build();
 
         }
+        if(userRequest.getDepartment().isEmpty()){
+            return CustomResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_DEPARTMENT_EMPTY)
+                    .data(null)
+                    .build();
+        }
+
+       Optional<Department> departmentOpt = departmentRepository.findByName(userRequest.getDepartment());
+        if(departmentOpt.isEmpty()){
+            return CustomResponse.builder()
+                    .responseCode(Response.BAD_REQUEST_CODE)
+                    .responseMessage(Response.BAD_REQUEST_MESSAGE_DEPARTMENT_DOES_NOT_EXIST)
+                    .data(null)
+                    .build();
+        }
+        Department department = departmentOpt.get();
 
         Optional<Roles> roles = roleRepository.findByName("ROLE_STUDENT");
         Roles studentRole = null;
@@ -89,7 +108,7 @@ public class UserServiceImpl implements UserService {
             studentRole = roles.get();
         }
 
-        StudentEntity student = new StudentEntity();
+        Student student = new Student();
         student.setFirstName(userRequest.getFirstName());
         student.setLastName(userRequest.getLastName());
         student.setEmail(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()));
@@ -97,8 +116,10 @@ public class UserServiceImpl implements UserService {
         student.setPhoneNumber(userRequest.getPhoneNumber());
         student.setStudentId(IDGenerator.generateStudentID());
         student.setRoles(Collections.singleton(studentRole));
+        student.setDepartment(department);
 
-        StudentEntity savedUser = studentRepository.save(student);
+
+        Student savedUser = studentRepository.save(student);
 
         return CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
@@ -154,7 +175,7 @@ public class UserServiceImpl implements UserService {
 
         }
 
-        StaffEntity staff = new StaffEntity();
+        Staff staff = new Staff();
         staff.setFirstName(userRequest.getFirstName());
         staff.setLastName(userRequest.getLastName());
         staff.setEmail(IDGenerator.generateEmail(userRequest.getFirstName(),userRequest.getLastName()));
@@ -163,7 +184,7 @@ public class UserServiceImpl implements UserService {
         staff.setStaffId(IDGenerator.generateStaffID());
 //        staff.setRoles(Collections.singleton(staff));
 
-        StaffEntity savedUser = staffRepository.save(staff);
+        Staff savedUser = staffRepository.save(staff);
 
         return CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
@@ -179,7 +200,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public ResponseEntity<List<CustomResponse>> getAllStudents() {
-        List<StudentEntity> users = studentRepository.findAll();
+        List<Student> users = studentRepository.findAll();
         List<CustomResponse> responses = users.stream().map(allStudents -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
@@ -193,7 +214,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public ResponseEntity<List<CustomResponse>> getAllStaffs() {
-        List<StaffEntity> users = staffRepository.findAll();
+        List<Staff> users = staffRepository.findAll();
         List<CustomResponse> responses = users.stream().map(allStaffs -> CustomResponse.builder()
                 .responseCode(Response.SUCCESS)
                 .responseMessage(Response.SUCCESS_MESSAGE)
@@ -217,8 +238,8 @@ public class UserServiceImpl implements UserService {
             try {
                 authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
                 final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
-                StaffEntity staff = staffRepository.findByEmail(userDetails.getUsername()).orElse(null);
-                StudentEntity student = studentRepository.findByEmail(userDetails.getUsername()).orElse(null);
+                Staff staff = staffRepository.findByEmail(userDetails.getUsername()).orElse(null);
+                Student student = studentRepository.findByEmail(userDetails.getUsername()).orElse(null);
 
                 if (student != null && passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
                     LoginResponse response = ResponseEntity.ok(LoginResponse.builder()

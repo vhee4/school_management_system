@@ -5,6 +5,8 @@ public class Response {
     public static final String USER_EXISTS_MESSAGE = "User with provided email already exists";
     public static final String BAD_REQUEST_CODE = "002";
     public static final String BAD_REQUEST_MESSAGE_FIRSTNAME = "First name field must not be empty";
+    public static final String BAD_REQUEST_MESSAGE_DEPARTMENT_EMPTY = "Department field must not be empty";
+    public static final String BAD_REQUEST_MESSAGE_DEPARTMENT_DOES_NOT_EXIST = "Department does not exist";
     public static final String BAD_REQUEST_MESSAGE_LASTNAME = "Last name field must not be empty";
     public static final String BAD_REQUEST_MESSAGE_PHONENUMBER = "Phone number field must not be empty";
     public static final String BAD_REQUEST_MESSAGE_WRONG_PHONENUMBER_FORMAT = "Phone number format is invalid";
