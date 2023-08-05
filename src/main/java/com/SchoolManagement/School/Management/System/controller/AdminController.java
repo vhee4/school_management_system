@@ -16,4 +16,9 @@ public class AdminController {
     public ResponseEntity<CustomResponse> enableStudentAccount(@RequestParam(name = "studentId") String studentId){
         return adminService.enableStudentAccount(studentId);
     }
+
+    @PostMapping("/add-fee")
+    public ResponseEntity<CustomResponse> addSchoolFees(@RequestParam("department_name") String departmentName, @RequestParam("amount") double fee){
+        return adminService.addSchoolFees(departmentName, fee);
+    }
 }

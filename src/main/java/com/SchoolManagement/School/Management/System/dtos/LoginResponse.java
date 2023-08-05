@@ -13,7 +13,8 @@ public class LoginResponse {
     private String lastName;
     private String phoneNumber;
     private String Id;
-//    private String studentId;
+    private String department;
+    private double schoolFee;
     private String access_token;
     private boolean isEnabled;
 }

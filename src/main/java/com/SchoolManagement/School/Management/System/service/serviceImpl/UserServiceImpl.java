@@ -1,15 +1,9 @@
 package com.SchoolManagement.School.Management.System.service.serviceImpl;
 
 import com.SchoolManagement.School.Management.System.dtos.*;
-import com.SchoolManagement.School.Management.System.entity.Department;
-import com.SchoolManagement.School.Management.System.entity.Roles;
-import com.SchoolManagement.School.Management.System.entity.Staff;
-import com.SchoolManagement.School.Management.System.entity.Student;
+import com.SchoolManagement.School.Management.System.entity.*;
 import com.SchoolManagement.School.Management.System.exception.ApplicationAuthenticationException;
-import com.SchoolManagement.School.Management.System.repository.DepartmentRepository;
-import com.SchoolManagement.School.Management.System.repository.RoleRepository;
-import com.SchoolManagement.School.Management.System.repository.StaffRepository;
-import com.SchoolManagement.School.Management.System.repository.StudentRepository;
+import com.SchoolManagement.School.Management.System.repository.*;
 import com.SchoolManagement.School.Management.System.security.CustomUserDetailService;
 import com.SchoolManagement.School.Management.System.security.CustomUserDetails;
 import com.SchoolManagement.School.Management.System.security.JWTTokenUtil;
@@ -37,26 +31,27 @@ public class UserServiceImpl implements UserService {
     private final CustomUserDetailService userDetailsService;
     private final JWTTokenUtil jwtTokenUtil;
     private final DepartmentRepository departmentRepository;
+    private final SchoolFeesRepository feesRepository;
     String phoneNumberRegex = "(^$|(234\\d{10})|(\\d{11}))";//phone number accepts only 13 digits starting with 234
 
 
     @Override
     public CustomResponse signUpForStudents(UserRequest userRequest) {
-        if(userRequest.getFirstName().isEmpty()){
+        if(userRequest.getFirstName()==null){
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_FIRSTNAME)
                     .data(null)
                     .build();
         }
-        if(userRequest.getLastName().isBlank()){
+        if(userRequest.getLastName()==null){
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_LASTNAME)
                     .data(null)
                     .build();
         }
-        if(userRequest.getPhoneNumber().isBlank()){
+        if(userRequest.getPhoneNumber()==null){
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_PHONENUMBER)
@@ -79,11 +74,10 @@ public class UserServiceImpl implements UserService {
                     .build();
 
         }
-        if(userRequest.getDepartment().isEmpty()){
+        if(userRequest.getDepartment()==null){
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_DEPARTMENT_EMPTY)
-                    .data(null)
                     .build();
         }
 
@@ -92,7 +86,6 @@ public class UserServiceImpl implements UserService {
             return CustomResponse.builder()
                     .responseCode(Response.BAD_REQUEST_CODE)
                     .responseMessage(Response.BAD_REQUEST_MESSAGE_DEPARTMENT_DOES_NOT_EXIST)
-                    .data(null)
                     .build();
         }
         Department department = departmentOpt.get();
@@ -131,7 +124,6 @@ public class UserServiceImpl implements UserService {
                         .password(savedUser.getPassword())
                         .build())
                 .build();
-
     }
 
     @Override
@@ -240,8 +232,9 @@ public class UserServiceImpl implements UserService {
                 final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getUsername());
                 Staff staff = staffRepository.findByEmail(userDetails.getUsername()).orElse(null);
                 Student student = studentRepository.findByEmail(userDetails.getUsername()).orElse(null);
-
                 if (student != null && passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
+                    Department department = departmentRepository.findByName(student.getDepartment().getName()).orElse(null);
+                    Fees fees = feesRepository.findByDepartment(department).orElse(null);
                     LoginResponse response = ResponseEntity.ok(LoginResponse.builder()
                             .access_token(jwtTokenUtil.generateToken(userDetails))
                             .email(student.getEmail())
@@ -249,6 +242,8 @@ public class UserServiceImpl implements UserService {
                             .lastName(student.getLastName())
                             .Id(student.getStudentId())
                             .phoneNumber(student.getPhoneNumber())
+                            .department(student.getDepartment().getName())
+                            .schoolFee(fees.getAmount())
                             .isEnabled(student.isEnabled())
                             .build()).getBody();
                     return ResponseEntity.ok(new CustomResponse(HttpStatus.OK.name(), "Login successfully", response));
