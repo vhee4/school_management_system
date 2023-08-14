@@ -62,7 +62,7 @@ public class AdminServiceImpl implements AdminService {
         Fees fees = Fees.builder()
                 .amount(fee)
                 .department(departmentOpt.get())
-                .feeDescription(FEE_DESCRIPTION.toString()).build();
+                .feeDescription(FEE_DESCRIPTION).build();
         feesRepository.save(fees);
         if(fees!=null){
             return ResponseEntity.ok(new CustomResponse(HttpStatus.CREATED.name(),  "Successfully created school fee for "+ departmentName, fees));
