@@ -86,9 +86,6 @@
 			<artifactId>flyway-mysql</artifactId>
 		</dependency>
 
-
-
-
 	</dependencies>
 
 	<build>

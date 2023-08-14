@@ -21,7 +21,7 @@ public class Fees {
     private Long id;
     private double amount;
     @Column(columnDefinition = "TEXT")
-    private String feeDescription;
+    private String[] feeDescription;
 
     @OneToOne
     @JoinColumn(name = "department_id")
